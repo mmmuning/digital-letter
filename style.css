@@ -1,0 +1,651 @@
+/* ==========================================================================
+   1. VARIABLES & RESET
+   ========================================================================== */
+:root {
+  /* BACKGROUND & THEME */
+  --bg-gradient: linear-gradient(20deg, #1c1c1c 0%, #1c1c1c 100%);
+  
+  /* ENVELOPE COLORS */
+  --env-main-color: #c5c5c5;
+  --env-flap-color: #f1f1f1;
+  --env-flap-side: #f5f5f5;
+
+  /* PAPER & INK COLORS */
+  --paper-bg: #ffffff;
+  --ink-main: #0f0d08;
+  --accent-ink: #901c2e; 
+  --scrollbar-color: transparent;
+  
+  /* INTERACTIVE COLORS */
+  --button-bg: #901c2e;
+  --button-text: #ffffff;
+  --input-border: #333333;
+
+  /* FONT SIZE VARIABLES */
+  --fs-h3: 3rem;          
+  --fs-handwriting: 3rem; 
+  --fs-body: 1rem;      
+  --fs-date: 1rem;
+  --fs-label: 0.9rem;     
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-gradient);
+  font-family: "Noto Serif", serif;
+  display: flex;
+  line-height: 2;
+  align-items: center;
+  justify-content: center;
+  height: 100svh;
+  overflow: hidden; 
+  margin: 0;
+}
+
+/* ==========================================================================
+   2. ENVELOPE STRUCTURE
+   ========================================================================== */
+.envelope_form_wrap {
+  max-width: 100%;
+  width: 700px;
+  position: relative;
+  padding: 1rem;
+}
+
+#envelope_form {
+  width: 100%;
+  position: relative;
+}
+
+.env_wrap {
+  position: relative;
+  overflow: hidden;
+  padding-top: 110%;
+  background: linear-gradient(0deg, var(--env-main-color) 0%, var(--env-main-color) 60%, rgba(255, 255, 255, 0) 55%);
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Envelope Flaps --- */
+.env_top {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  filter: drop-shadow(0px 6px 3px rgba(0, 0, 0, 0.1));
+  width: 100%;
+  height: 33%;
+  top: 40%;
+  z-index: 99;
+  transition: all .2s ease-in-out;
+  transform-origin: top;
+  pointer-events: none;
+}
+
+.env_top:before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--env-flap-color);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+#envelope_form.open .env_top {
+  transform: rotateX(-180deg);
+  z-index: 1;
+}
+
+.env_bottom_wrap {
+  height: 60%;
+  width: 100%;
+  z-index: 20;
+  bottom: 0;
+  position: absolute;
+  filter: drop-shadow(0px -6px 3px rgba(0, 0, 0, 0.1));
+  pointer-events: none;
+}
+
+.env_bottom {
+  clip-path: polygon(50% 40%, 100% 0, 100% 100%, 0 100%, 0 0);
+  background: var(--env-flap-color);
+  width: 100%;
+  height: 100%;
+}
+
+.env_bottom:before,
+.env_bottom:after {
+  content: '';
+  position: absolute;
+  background: var(--env-flap-side);
+  width: 50%;
+  height: 100%;
+}
+
+.env_bottom:before { clip-path: polygon(100% 40%, 0 0, 0 100%); }
+.env_bottom:after { right: 0; clip-path: polygon(0 40%, 100% 0, 100% 100%); }
+
+.flap_text {
+  font-family: 'Corinthia', cursive;
+  font-size: 1.8rem;
+  color: #5a1212; 
+  opacity: 0.9;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+#envelope_form.open .flap_text { opacity: 0; }
+
+.seal {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  width: 120px; 
+  height: 120px;
+  background-image: url('assets/seal.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  border: none;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.4));
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.seal:hover { transform: translate(-50%, -50%) scale(1.05); }
+#envelope_form.open .seal { opacity: 0; pointer-events: none; }
+
+/* ==========================================================================
+   3. THE LETTER (CONTENT BOX)
+   ========================================================================== */
+.env_form_wrap {
+  width: calc(100% - 2rem);
+  left: 1rem;
+  background: transparent;
+  color: var(--ink-main);
+  position: absolute;
+  height: 90%; 
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 3rem 2rem 0 2rem; 
+  z-index: 5;
+  transition: all 0.6s ease-in-out;
+  top: 100%;
+  mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+}
+
+#envelope_form.open .env_form_wrap {
+  top: 5%;
+  z-index: 10;
+}
+
+.env_form_wrap::-webkit-scrollbar { width: 5px; }
+.env_form_wrap::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-color);
+  border-radius: 10px;
+}
+
+.letter_content {
+  display: block;
+  width: 100%;
+  padding-bottom: 400px; 
+  position: relative;
+  text-align: left;
+}
+
+.letter_content::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -30px; 
+  left: -2rem;
+  right: -2rem;
+  height: 95%;
+  background: #ffffff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.05);
+  z-index: -1;
+}
+
+/* --- Letter Typography --- */
+.letter_date {
+  text-align: right;
+  margin-bottom: 2rem;
+  font-style: italic;
+  opacity: 0.8;
+  font-size: var(--fs-date);
+}
+
+.letter_content h3 {
+  font-family: "Corinthia", cursive;
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  color: var(--accent-ink);
+  margin-bottom: 2rem;
+}
+
+.letter_body p {
+  text-indent: 2rem;
+  margin-bottom: 1.5rem;
+  line-height: 2;
+  text-align: justify;
+  font-size: var(--fs-body);
+}
+
+.letter_signature {
+  margin-top: 3rem;
+  font-size: var(--fs-body);
+  text-align: right;
+  padding-right: 2rem;
+}
+
+.handwriting {
+  font-family: "Corinthia", cursive;
+  font-size: var(--fs-handwriting);
+  font-weight: 700;
+  margin-top: 0.5rem;
+  color: var(--accent-ink);
+}
+
+/* ==========================================================================
+   4. INTERACTIVE FORM & BUTTONS
+   ========================================================================== */
+#form {
+  margin-top: 4rem;
+  border-top: 1px dashed #ccc;
+  padding-top: 2rem;
+  font-size: var(--fs-body);
+}
+
+.form_btn {
+  display: flex; 
+  gap: 10px;
+}
+
+.submit {
+  width: 100%;
+  padding: 1rem;
+  background: var(--button-bg);
+  border: none;
+  color: var(--button-text);
+  font-size: var(--fs-body);
+  cursor: pointer;
+  position: relative;
+  z-index: 99;
+  pointer-events: auto; 
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+}
+
+.submit:hover {
+  transform: translateY(-5px) rotate(-2deg);
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+}
+
+.submit:active { transform: translateY(0) scale(0.95); }
+
+.btn_no { background-color: #1c1c1c !important; transition: opacity 0.5s ease; }
+.btn_yes { background-color: var(--accent-ink) !important; color: white; }
+
+/* ==========================================================================
+   5. SCRAPBOOK DECORATIONS (STICKERS & STYLES)
+   ========================================================================== */
+.text_highlight {
+  background-image: linear-gradient(to right, rgba(212, 175, 55, 0.4) 0%, rgba(212, 175, 55, 0.7) 100%);
+  background-position: 0 85%;
+  background-repeat: no-repeat;
+  background-size: 100% 0.8em; 
+  padding: 0 4px;
+  border-radius: 2px;
+  color: var(--ink-main); 
+  font-weight: 600;
+}
+
+.text_encircle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 1rem;
+  color: var(--accent-ink);
+  font-weight: 700;
+  text-indent: 0 !important;
+  vertical-align: middle;
+  z-index: 1;
+  margin: 0 5px;
+}
+
+.text_encircle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%; 
+  height: 110%; 
+  transform: translate(-50%, -50%) rotate(-1deg);
+  z-index: -1;
+  background-color: var(--accent-ink);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60' preserveAspectRatio='none'%3E%3Cpath d='M10,30 c0,-15 30,-25 45,-25 c20,0 35,10 35,25 c0,15 -20,25 -45,25 c-25,0 -40,-10 -40,-25 c0,-10 15,-20 30,-22' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60' preserveAspectRatio='none'%3E%3Cpath d='M10,30 c0,-15 30,-25 45,-25 c20,0 35,10 35,25 c0,15 -20,25 -45,25 c-25,0 -40,-10 -40,-25 c0,-10 15,-20 30,-22' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  opacity: 0.7; 
+  filter: blur(0.4px) contrast(150%);
+}
+
+.text_underline {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-ink); 
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px; 
+  font-weight: bold;
+}
+
+/* --- Stickers --- */
+.sparkle_left_sticker {
+  position: absolute;
+  left: 0;
+  top: 50px;
+  width: 100px;
+  height: 100px;
+  background: url('assets/sparkles.gif') no-repeat center/contain;
+  filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.2));
+  z-index: 10001; 
+  animation: floatTape 4s ease-in-out infinite;
+  animation-delay: 0.8s; 
+}
+
+.sparkle_right_sticker {
+  position: absolute;
+  right: 0;
+  top: 200px;
+  width: 100px;
+  height: 100px;
+  background: url('assets/sparkles.gif') no-repeat center/contain;
+  filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.2));
+  z-index: 10001; 
+  animation: floatTape 4s ease-in-out infinite;
+  animation-delay: 1.2s; 
+}
+
+.red_ribbon_sticker {
+  float: right;
+  width: 220px;
+  height: 220px;
+  margin-left: 20px; 
+  background: url('assets/red_ribbon.png') no-repeat center/contain;
+  shape-outside: circle(45%);
+  filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.1));
+  transform: rotate(15deg);
+}
+
+.paper_heart_sticker {
+  float: left;
+  width: 250px;
+  height: 250px;
+  margin-right: 20px; 
+  background: url('assets/paper_heart.png') no-repeat center/contain;
+  shape-outside: circle(45%);
+  filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.1));
+  transform: rotate(-15deg);
+}
+
+.paper_heart_1_sticker {
+  float: right;
+  width: 200px;
+  height: 200px;
+  margin-left: 20px; 
+  background: url('assets/paper_heart_1.png') no-repeat center/contain;
+  shape-outside: circle(55%);
+  filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.1));
+}
+
+.uno_card_sticker {
+  float: right;
+  width: 200px;
+  height: 200px;
+  margin-left: 20px; 
+  background: url('assets/uno_card.png') no-repeat center/contain;
+  shape-outside: circle(55%);
+  filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.1));
+}
+
+/* ==========================================================================
+   6. MEDIA / TAPE PLAYER
+   ========================================================================== */
+.tape_player_wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 15;
+  transition: top 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#envelope_form.open .tape_player_wrap { top: 2%; pointer-events: auto; }
+
+.cassette_image_wrapper {
+  position: relative;
+  animation: floatTape 4s ease-in-out infinite;
+  animation-delay: 0.8s; 
+  width: 400px;
+}
+
+.tape_jpg { width: 100%; border-radius: 5px; }
+
+#tape_recorder {
+  width: 280px;
+  height: 30px;
+  margin-top: 10px;
+  filter: invert(100%); 
+}
+
+/* ==========================================================================
+   7. SPOTIFY & CLIPPING
+   ========================================================================== */
+.spotify_note {
+  background: #f4f4f8;
+  padding: 1.5rem;
+  margin: 3rem auto;
+  width: 85%;
+  position: relative;
+  transform: rotate(2deg);
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+  line-height: 1.5;
+}
+
+.washi_tape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.5); 
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.note_title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  font-weight: bold;
+  text-indent: 0 !important;
+}
+
+.spotify_list { list-style: none; padding: 0; margin: 0; }
+.spotify_list li a {
+  text-decoration: none;
+  color: var(--ink-main);
+  font-size: 0.9rem;
+  display: block;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.spotify_list li a:hover { color: var(--accent-ink); }
+
+.clipping {
+  background: var(--accent-ink);
+  color: #ffffff;
+  padding: 1.5rem;
+  margin: 3rem 1rem;
+}
+
+.clipping .quote {
+  font-style: italic;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  text-indent: 0 !important;
+  text-align: left;
+}
+
+/* ==========================================================================
+   8. FINAL REVEAL (CALENDAR)
+   ========================================================================== */
+#final_reveal {
+  display: none; 
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  width: 90%;
+  max-width: 500px;
+  animation: fadeIn 1.5s ease forwards;
+}
+
+.date_container {
+  background-color: #e5e4e2;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.save_the_date {
+  font-family: "Corinthia", cursive;
+  color: var(--accent-ink);
+  font-size: 5rem;
+  transform: rotate(-10deg);
+  font-weight: bold;
+  display: block;
+  margin-bottom: 40px;
+}
+
+.calendar_grid { display: flex; border-top: 1px solid #999; border-bottom: 1px solid #999; }
+.day_column { flex: 1; border-right: 1px solid #999; padding: 10px 0 40px 0; }
+.day_column:last-child { border-right: none; }
+.day_label { font-size: 0.8rem; text-transform: uppercase; margin-bottom: 15px; }
+.date_number { font-size: 3.5rem; font-weight: 300; display: block; }
+.launch_text { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; line-height: 1.2; }
+
+.date_encircle {
+  position: absolute;
+  top: 68%; 
+  left: 50%;
+  width: 23%; 
+  height: 23%;
+  transform: translate(-50%, -50%) rotate(-2deg);
+  pointer-events: none;
+  background-color: var(--accent-ink);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60' preserveAspectRatio='none'%3E%3Cpath d='M10,30 c0,-15 30,-25 45,-25 c20,0 35,10 35,25 c0,15 -20,25 -45,25 c-25,0 -40,-10 -40,-25 c0,-10 15,-20 30,-22' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60' preserveAspectRatio='none'%3E%3Cpath d='M10,30 c0,-15 30,-25 45,-25 c20,0 35,10 35,25 c0,15 -20,25 -45,25 c-25,0 -40,-10 -40,-25 c0,-10 15,-20 30,-22' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  opacity: 0.8;
+  filter: blur(0.3px);
+  z-index: 10;
+}
+
+.clip_sticker {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -100px; 
+  width: 150px;
+  height: 150px;
+  background: url('assets/clip.png') no-repeat center/contain;
+  filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.2));
+  z-index: 10001; 
+}
+
+/* ==========================================================================
+   9. ANIMATIONS & STATE CHANGES
+   ========================================================================== */
+#envelope_form.sent .env_form_wrap { top: 100% !important; }
+#envelope_form.sent .env_top { transition-delay: 0.2s; transform: none; z-index: 99; }
+
+.fly { animation: flyAway 0.8s ease-in forwards; }
+
+.fade_out_screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease-in-out;
+}
+
+.fade_out_screen.active { opacity: 1; pointer-events: auto; }
+
+@keyframes flyAway {
+  0% { transform: scale(1); }
+  30% { transform: translateY(20px); }
+  100% { transform: translate(1200px, -200px) rotate(30deg) scale(0.1); opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@keyframes floatTape {
+  0% { transform: translateY(0px) rotate(0deg); filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.4)); }
+  50% { transform: translateY(-15px) rotate(1deg); filter: drop-shadow(0px 25px 30px rgba(0,0,0,0.2)); }
+  100% { transform: translateY(0px) rotate(0deg); filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.4)); }
+}
+
+/* ==========================================================================
+   10. RESPONSIVE QUERIES
+   ========================================================================== */
+@media (max-width: 768px) {
+  :root { --fs-h3: 3rem; --fs-handwriting: 3rem; --fs-body: 1.1rem; }
+  .envelope_form_wrap { width: 95%; }
+  .cassette_image_wrapper { width: 320px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  :root { --fs-h3: 2.5rem; --fs-handwriting: 2.5rem; --fs-body: 1rem; --fs-label: 0.7rem; }
+  body { align-items: flex-start; overflow-y: auto; padding: 20px 0; }
+  .envelope_form_wrap { width: 550px; margin: 0 auto; }
+  .env_wrap { padding-top: 85%; }
+  .cassette_image_wrapper { width: 240px; }
+  #tape_recorder { width: 200px; height: 25px; }
+  .seal { width: 80px; height: 80px; }
+}
+
+@media (max-width: 480px) {
+  :root { --fs-h3: 2.2rem; --fs-handwriting: 2.2rem; --fs-body: 1rem; }
+  .cassette_image_wrapper { width: 280px; }
+  #tape_recorder { width: 240px; }
+}
